@@ -1,0 +1,32 @@
+{
+  "name": "sql-generate",
+  "version": "0.0.2",
+  "description": "this is a sql script generator.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "smallarrows",
+  "license": "MIT",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "node-xlsx": "^0.15.0",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smallarrows/sql-generate.git"
+  },
+  "keywords": [
+    "sql-generate"
+  ],
+  "bugs": {
+    "url": "https://github.com/smallarrows/sql-generate/issues"
+  },
+  "homepage": "https://github.com/smallarrows/sql-generate#readme"
+}
