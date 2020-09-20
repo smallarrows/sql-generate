@@ -37,14 +37,14 @@ function File(options){
         tableName:'string',
         params:'function',
         autoReadDirs:'boolean'
-    }
+    };
     this.checkOptions();
 
     //4. 初始化实例参数
     this.isDirsUpdate = true;
     Object.assign(this.params,{
         file:['$FILE_FILENAME','$FILE_FILEPATH'],
-    })
+    });
     initParams(this,this.params);
 
     //5. 获取目录和文件
@@ -70,7 +70,7 @@ File.prototype.setOptions = function(options={}){
             }
         }
     }
-}
+};
 /**
  * 获取目录和文件数据
  * @dirs 
@@ -100,12 +100,12 @@ File.prototype.getDirs = function(_root) {
                 obj.isDir = true;
                 if(fs.statSync(subPath).isDirectory()){
                     dirsBuf[index] = obj;
-                    collectDir(subPath,dirsBuf[index]['sub'],filesBuf);
+                    collectDir(subPath,dirsBuf[index].sub,filesBuf);
                 }else{
                     dirsBuf[index] = obj;
                     filesBuf.push(obj);
                 }
-            })
+            });
         } catch (error) {
             if(errorFlag !== 0){
                 throw error;
@@ -118,8 +118,8 @@ File.prototype.getDirs = function(_root) {
     this.files = files;
     this.isDirsUpdate = false;
     console.log('文件收集完成，总文件数：'+files.length);
-    return {dirs,files}
-}
+    return {dirs,files};
+};
 File.prototype.matchFile = function(_files){
     const files = _files?_files:this.files;
     const {fileRules} = this.options;
@@ -133,8 +133,8 @@ File.prototype.matchFile = function(_files){
             break;
         }
     }
-    return {index,file:files[index]}
-}
+    return {index,file:files[index]};
+};
 File.prototype.writeFile = function(_path,_data){
     let data_str,p;
     if(!_path){
@@ -159,16 +159,16 @@ File.prototype.writeFile = function(_path,_data){
             p = path.join(_path,'sql_result.sql');
         break;
     }
-    fs.writeFileSync(p, data_str)
-}
+    fs.writeFileSync(p, data_str);
+};
 File.prototype.readFile = function(_path, _decode){
     let data = fs.readFileSync(_path, _decode?_decode:'utf8');
     return data;
-}
+};
 File.prototype.build = function (){ // 暂时作为预留
     console.warn('Not yet implemented');
-}
+};
 
 module.exports = {
     File
-}
+};

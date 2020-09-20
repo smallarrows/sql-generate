@@ -33,7 +33,7 @@ const XlsxFile = function(options){
         autoReadXlsx:'boolean',
         pathRules:{type:"function",required:true},
         fileRules:{type:"function",required:true}
-    })
+    });
     this.checkOptions();
 
     //4. 初始化属性
@@ -44,7 +44,7 @@ const XlsxFile = function(options){
     //5. 初始化实例参数
     Object.assign(this.params,{
         xlsx:[{name:'$xlsx',value:{}}] //$XLSX 每行的对象
-    })
+    });
     initParams(this,this.params);
 
     //6. 获取xlsx内容
@@ -52,7 +52,7 @@ const XlsxFile = function(options){
     if(autoReadXlsx){
         this.getXlsx();
     }
-}
+};
 XlsxFile.prototype = File.prototype;
 
 /**
@@ -76,16 +76,16 @@ XlsxFile.prototype.setOptions = function(options={}){
             }
         }
     }
-}
+};
 XlsxFile.prototype.getXlsx = function(_xlsxPath){
-    console.log('开始解析xlsx...')
+    console.log('开始解析xlsx...');
     const xlsxPath = _xlsxPath?_xlsxPath:this.options.xlsxPath;
     this.xlsx_source = xlsx.parse(xlsxPath);
     this.xlsxs = xlsxFormat(this.xlsx_source);
     this.isXlsxUpdate = false;
-    console.log('解析完成, 总行数：'+this.xlsxs.length)
+    console.log('解析完成, 总行数：'+this.xlsxs.length);
     return {xlsxs:this.xlsxs,xlsx_source:this.xlsx_source};
-}
+};
 const xlsxFormat = function(xlsx_source){
     const data = [];
     const xlsxs = xlsx_source;
@@ -101,19 +101,19 @@ const xlsxFormat = function(xlsx_source){
                 if(key){
                     obj[key] = col;
                 }
-            })
+            });
             data.push(obj);
         }
-    })
+    });
     return data;
-}
+};
 /**
  * 根据相关参数得到SQL对象列表
  * @param [XlsxObj,{}] xlsxs 
  * @param [FileObj,{}] files 
  */
 XlsxFile.prototype.getSqlObjList = function(_xlsxs,_files){
-    console.log('开始生成SQL虚拟对象列表...')
+    console.log('开始生成SQL虚拟对象列表...');
     const xlsxs = _xlsxs?_xlsxs:this.xlsxs;
     const files = _files?_files:this.files;
     const {params,sql} = this.options;
@@ -124,7 +124,7 @@ XlsxFile.prototype.getSqlObjList = function(_xlsxs,_files){
     if(!files){
         throw TypeError(`files type is error!`);
     }
-    console.log('开始对比文件...')
+    console.log('开始对比文件...');
     this.matchCount = 0;
     files.forEach((file)=>{
         //1. 处理sql对象需要使用的参数
@@ -139,13 +139,13 @@ XlsxFile.prototype.getSqlObjList = function(_xlsxs,_files){
             sqlObj.setFields(paramOptions);
             sqlObj.setValues(paramOptions);
             sqlList.push(sqlObj);
-        };
-    })
+        }
+    });
     console.log('对比文件次数：'+this.matchCount);
 
-    console.log('SQL虚拟对象列表生成完成，总匹对SQL数：'+sqlList.length)
+    console.log('SQL虚拟对象列表生成完成，总匹对SQL数：'+sqlList.length);
     return sqlList;
-}
+};
 XlsxFile.prototype.matchXlsx = function(_xlsxs){
     const xlsxs = _xlsxs;
     const {fileRules} = this.options;
@@ -162,22 +162,22 @@ XlsxFile.prototype.matchXlsx = function(_xlsxs){
         }
     }
     if(index > -1){
-        return {index,xlsx:xlsxs[index]}
+        return {index,xlsx:xlsxs[index]};
     }
     return null;
-}
+};
 XlsxFile.prototype.getSqls = function(_sqlObjList){
-    console.log('开始生成有效SQL语句列表...')
+    console.log('开始生成有效SQL语句列表...');
     const sqlObjList = _sqlObjList?_sqlObjList:this.sqlObjList;
     const sqls = [];
     sqlObjList.forEach(sqlObj => {
         sqls.push(sqlObj.toSqlString());
     });
-    console.log('生成有效SQL语句列表结束')
+    console.log('生成有效SQL语句列表结束');
     return sqls;
-}
+};
 XlsxFile.prototype.build = function(){
-    console.log('构建开始')
+    console.log('构建开始');
     const start = new Date();
     //1. 检查options内容
     this.checkOptions();
@@ -192,8 +192,8 @@ XlsxFile.prototype.build = function(){
     const end = new Date();
     console.log('构建结束, 总耗时：'+(end-start)+'ms.');
     return this.sqls;
-}
+};
 
 module.exports = {
     XlsxFile
-}
+};

@@ -12,24 +12,24 @@ const Base = function(options){
     this.params = {
         sqlTypes:["__SELECT__","__INSERT__","__UPDATE__","__DELETE__"],
         dataBase:["__ORACLE__","__SQLSERVER__","__MYSQL__"]
-    }
+    };
     initParams(this,this.params);
-}
+};
 Base.prototype.getParamsOptions = function(){
     const params = this.options.params;
     const paramOptions = params.call(this);
     execObservers(paramOptions);// 执行一次，在添加监听
     addManyObservers(paramOptions,this);
     return paramOptions;
-}
+};
 Base.prototype.setOptions = function(options={}){
     if(this.checkOptions(options)){
         this.options = options;
     }
-}
+};
 Base.prototype.getOptions= function(){
     return this.options;
-}
+};
 Base.prototype.checkOptions = function(_options){
     const opt = _options?_options:this.options;
     if(opt===undefined){return true;}
@@ -45,7 +45,7 @@ Base.prototype.checkOptions = function(_options){
                 if(paramType.required && opt[key]==null){
                     throw new TypeError(`${key} is required in options!`);
                 }
-                if(!(typeof attr === paramType.type)){
+                if(typeof attr !== paramType.type){
                     throw new TypeError(`${key} should be ${paramType.type} type!`);
                 }
                 // 走到这里证明类型验证通过
@@ -53,30 +53,30 @@ Base.prototype.checkOptions = function(_options){
                     throw new TypeError(`${key} can not be empty!`);
                 }
             }else if(typeof paramType === 'string'){
-                if(!(typeof attr === paramType) || (typeof attr === 'string' && attr.length === 0)){
+                if((typeof attr !== paramType) || (typeof attr === 'string' && attr.length === 0)){
                     throw new TypeError(`${key} should be ${paramType.type} type!`);
                 }
             }
         }
     }
     return true;
-}
+};
 Base.prototype.getSqlObjList = function(){
     throw new Error('Please override getSqlObjList method!');
-}
+};
 Base.prototype.getSqls = function(){
     throw new Error('Please override getSqls method!');
-}
+};
 Base.prototype.build = function (){
     throw new Error('Please override build method!');
-}
+};
 
 Base.prototype.getClassConstant = function(){
     return XlsxFile.PARAMS;
-}
+};
 
 module.exports = {
     Base
-}
+};
 
 

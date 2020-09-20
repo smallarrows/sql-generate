@@ -1,4 +1,3 @@
-
 const FileObj = function (options) {
     const obj = {
         name: "",
@@ -9,7 +8,7 @@ const FileObj = function (options) {
         match: false
     };
     return Object.preventExtensions(obj);
-}
+};
 const SqlObj = function(sqlOptions){
     const obj = {};
     const sql = sqlOptions;
@@ -28,7 +27,7 @@ const SqlObj = function(sqlOptions){
             obj.orderBy = sql.orderBy;  // ""|[]
             obj.toSqlString = function(){
         
-            }
+            };
             break;
         case 'INSERT':
             obj.fields = sql.fields||[];    // []
@@ -43,7 +42,7 @@ const SqlObj = function(sqlOptions){
                 if(!Array.isArray(obj.fields)){
                     throw TypeError(`fields type is error!`);
                 }
-                if(!typeof obj.table === "string" || !obj.table){
+                if(!(typeof obj.table === "string" && obj.table)){
                     throw TypeError(`table type is error!`);
                 }
                 if(!Array.isArray(obj.values)){
@@ -55,40 +54,40 @@ const SqlObj = function(sqlOptions){
                     for (let i = 0; i < obj.values.length; i++) {
                         const value = obj.values[i];
                         if(typeof value === 'object'){
-                            if(value['addApostrophe'] === false){
-                                s += value['value'];
+                            if(value.addApostrophe === false){
+                                s += value.value;
                             }else{
-                                s += "'" + value['value'] + "'";
+                                s += "'" + value.value + "'";
                             }
                         }else{
                             s += "'" + value + "'";
                         }
                         if(i !== (obj.values.length-1)){
-                            s+=","
+                            s+=",";
                         }
                     }
                 }
-                s += ")"
+                s += ")";
                 return s;
-            }
+            };
             obj.setFields = function(param){
                 Object.keys(param).forEach(key=>{
                     obj.fields.push(key);
-                })
-            }
+                });
+            };
             obj.setValues = function(param){
                 Object.keys(param).forEach(key=>{
                     const p = param[key];
                     obj.values.push(p);
-                })
-            }
+                });
+            };
             break;
         case 'UPDATE':// @feature 暂未实现
             obj.fields = sql.fields;    // []
             obj.values = sql.values;    // []
             obj.toSqlString = function(){
         
-            }
+            };
             break;
         case 'DELETE':// @feature 暂未实现
             obj.table = sql.table;        // ""
@@ -96,12 +95,12 @@ const SqlObj = function(sqlOptions){
             obj.where = sql.where;      // []
             obj.toSqlString = function(){
         
-            }
+            };
             break;
     }
     return Object.preventExtensions(obj);
-}
+};
 module.exports = {
     FileObj,
     SqlObj
-}
+};

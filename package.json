@@ -28,5 +28,6 @@
   "bugs": {
     "url": "https://github.com/smallarrows/sql-generate/issues"
   },
-  "homepage": "https://github.com/smallarrows/sql-generate#readme"
+  "homepage": "https://github.com/smallarrows/sql-generate#readme",
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" }
 }
