@@ -126,12 +126,13 @@ XlsxFile.prototype.getSqlObjList = function(_xlsxs,_files){
     }
     console.log('开始对比文件...');
     this.matchCount = 0;
-    files.forEach((file)=>{
+    xlsxs.forEach((xlsx)=>{
         //1. 处理sql对象需要使用的参数
-        this.$FILE_FILENAME = file.name;
-        this.$FILE_FILEPATH = file.root + file.path; 
-        const match_result = this.matchXlsx(xlsxs);
-        if(match_result!=null){
+        this.$xlsx = xlsx;
+        const fileMatchList = this.matchFiles(files);
+        fileMatchList.forEach(file=>{
+            this.$FILE_FILENAME = file.name;
+            this.$FILE_FILEPATH = file.root + file.path;
             const sqlOptions = sql.call(this);  // 获取 sql 配置
             const paramOptions = this.getParamsOptions();    // 获取 param 参数
             initParamType(paramOptions,sqlOptions.database);
@@ -139,33 +140,33 @@ XlsxFile.prototype.getSqlObjList = function(_xlsxs,_files){
             sqlObj.setFields(paramOptions);
             sqlObj.setValues(paramOptions);
             sqlList.push(sqlObj);
-        }
+        });
     });
     console.log('对比文件次数：'+this.matchCount);
 
     console.log('SQL虚拟对象列表生成完成，总匹对SQL数：'+sqlList.length);
     return sqlList;
 };
-XlsxFile.prototype.matchXlsx = function(_xlsxs){
-    const xlsxs = _xlsxs;
-    const {fileRules} = this.options;
-    let index = -1;
-    for (let i = 0; i < xlsxs.length; i++) {
-        const xlsx = xlsxs[i];
-        if(xlsx.match){continue;}
-        this.matchCount++;
-        this.$xlsx = xlsx;
-        if(fileRules.call(this)){
-            index = i;
-            xlsxs[index].match = true;
-            break;
-        }
-    }
-    if(index > -1){
-        return {index,xlsx:xlsxs[index]};
-    }
-    return null;
-};
+// XlsxFile.prototype.matchFiles = function(_xlsxs){
+//     const xlsxs = _xlsxs;
+//     const {fileRules} = this.options;
+//     let index = -1;
+//     for (let i = 0; i < xlsxs.length; i++) {
+//         const xlsx = xlsxs[i];
+//         if(xlsx.match){continue;}
+//         this.matchCount++;
+//         this.$xlsx = xlsx;
+//         if(fileRules.call(this)){
+//             index = i;
+//             xlsxs[index].match = true;
+//             break;
+//         }
+//     }
+//     if(index > -1){
+//         return {index,xlsx:xlsxs[index]};
+//     }
+//     return null;
+// };
 XlsxFile.prototype.getSqls = function(_sqlObjList){
     console.log('开始生成有效SQL语句列表...');
     const sqlObjList = _sqlObjList?_sqlObjList:this.sqlObjList;

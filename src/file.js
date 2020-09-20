@@ -120,20 +120,25 @@ File.prototype.getDirs = function(_root) {
     console.log('文件收集完成，总文件数：'+files.length);
     return {dirs,files};
 };
-File.prototype.matchFile = function(_files){
-    const files = _files?_files:this.files;
+File.prototype.matchFiles = function(_files){
+    const files = _files;
     const {fileRules} = this.options;
-    let index = 0;
+    const files_result = [];
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        if(file.match){continue;}
+        this.matchCount++;
         this.$FILE_FILENAME = file.name;
-        this.$FILE_FILEPATH = file.path; 
+        this.$FILE_FILEPATH = file.root + file.path;
         if(fileRules.call(this)){
-            index = i;
-            break;
+            files[i].match = true;
+            files_result.push(files[i]);
         }
     }
-    return {index,file:files[index]};
+    if(files_result.length > 0){
+        return files_result;
+    }
+    return null;
 };
 File.prototype.writeFile = function(_path,_data){
     let data_str,p;
