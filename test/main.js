@@ -57,7 +57,7 @@ const sqlBuild = new XlsxFile({
     sql:function(){
         return {
             table:'IMA_IMAGE_FILE',
-            type: this.__INSERT__,
+            type: this.__INSERT__, 
             database: this.__ORACLE__,
         };
     },

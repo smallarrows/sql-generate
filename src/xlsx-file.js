@@ -138,9 +138,7 @@ XlsxFile.prototype.getSqlObjList = function(){
                 const sqlOptions = sql.call(this);  // 获取 sql 配置
                 const paramOptions = this.getParamsOptions();    // 获取 param 参数
                 initParamType(paramOptions,sqlOptions.database);
-                const sqlObj = SqlObj(sqlOptions);
-                sqlObj.setFields(paramOptions);
-                sqlObj.setValues(paramOptions);
+                const sqlObj = new SqlObj(sqlOptions,paramOptions);
                 sqlList.push(sqlObj);
             });
         }
