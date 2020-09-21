@@ -1,11 +1,12 @@
 const FileObj = function (options) {
     const obj = {
-        name: "",
-        sub: [],
-        root: "",
-        path: "",
+        name: "",   // 目录或文件名称
+        sub: [],    // 子目录或文件
+        root: "",   // 根路径
+        path: "",   // 文件路径，结合根路径为全路径
         isDir: false,
-        match: false
+        match: false,
+        last:{}     // 前一个目录
     };
     return Object.preventExtensions(obj);
 };

@@ -20,14 +20,10 @@ const {SqlObj} = require('./obj');
  */
 
 const XlsxFile = function(options){
-    //1. 处理路径
-    const {xlsxPath} = options;
-    options.xlsxPath = path.join(xlsxPath,"");
-
-    //2. 继承基类
+    //1. 继承基类
     File.call(this,options);
 
-    //3. 设置校验类型
+    //2. 设置校验类型
     Object.assign(this.paramsType,{
         xlsxPath:{type:'string',required:true},
         autoReadXlsx:'boolean',
@@ -36,16 +32,20 @@ const XlsxFile = function(options){
     });
     this.checkOptions();
 
-    //4. 初始化属性
+    //3. 初始化属性
     this.isXlsxUpdate = true;// 标记是否需要更新xlsx信息
     this.sqls = [];
     this.paramsList = [];
 
-    //5. 初始化实例参数
+    //4. 初始化实例参数
     Object.assign(this.params,{
         xlsx:[{name:'$xlsx',value:{}}] //$XLSX 每行的对象
     });
     initParams(this,this.params);
+
+    //5. 格式化路径
+    const {xlsxPath} = options;
+    options.xlsxPath = path.join(xlsxPath,"");
 
     //6. 获取xlsx内容
     const autoReadXlsx = options.autoReadXlsx == null?true:options.autoReadXlsx;
@@ -61,7 +61,7 @@ XlsxFile.prototype = File.prototype;
  */
 XlsxFile.prototype.setOptions = function(options={}){
     const {rootPath,xlsxPath} = this.options;
-    if(this.checkOptions(options)){
+    if(this.checkOptions()){
         this.options = options;
         if(rootPath !== options.rootPath){
             this.isDirsUpdate = true;
@@ -112,61 +112,64 @@ const xlsxFormat = function(xlsx_source){
  * @param [XlsxObj,{}] xlsxs 
  * @param [FileObj,{}] files 
  */
-XlsxFile.prototype.getSqlObjList = function(_xlsxs,_files){
+XlsxFile.prototype.getSqlObjList = function(){
     console.log('开始生成SQL虚拟对象列表...');
-    const xlsxs = _xlsxs?_xlsxs:this.xlsxs;
-    const files = _files?_files:this.files;
+    const xlsxs = this.xlsxs;
+    const files = this.files;
+    const dirs = this.dirs;
     const {params,sql} = this.options;
     let sqlList = [];
     if(!xlsxs){
-        throw TypeError(`xlsxs type is error!`);
+        throw TypeError(`xlsxs isn't exist!`);
     }
     if(!files){
-        throw TypeError(`files type is error!`);
+        throw TypeError(`files isn't exist!`);
     }
     console.log('开始对比文件...');
     this.matchCount = 0;
     xlsxs.forEach((xlsx)=>{
         //1. 处理sql对象需要使用的参数
         this.$xlsx = xlsx;
-        const fileMatchList = this.matchFiles(files);
-        fileMatchList.forEach(file=>{
-            this.$FILE_FILENAME = file.name;
-            this.$FILE_FILEPATH = file.root + file.path;
-            const sqlOptions = sql.call(this);  // 获取 sql 配置
-            const paramOptions = this.getParamsOptions();    // 获取 param 参数
-            initParamType(paramOptions,sqlOptions.database);
-            const sqlObj = SqlObj(sqlOptions);
-            sqlObj.setFields(paramOptions);
-            sqlObj.setValues(paramOptions);
-            sqlList.push(sqlObj);
-        });
+        const fileMatchList = this.matchFiles({files,dirs});
+        if(fileMatchList){
+            fileMatchList.forEach(file=>{
+                this.$FILE_FILENAME = file.name;
+                this.$FILE_FILEPATH = file.root + file.path;
+                const sqlOptions = sql.call(this);  // 获取 sql 配置
+                const paramOptions = this.getParamsOptions();    // 获取 param 参数
+                initParamType(paramOptions,sqlOptions.database);
+                const sqlObj = SqlObj(sqlOptions);
+                sqlObj.setFields(paramOptions);
+                sqlObj.setValues(paramOptions);
+                sqlList.push(sqlObj);
+            });
+        }
     });
     console.log('对比文件次数：'+this.matchCount);
 
     console.log('SQL虚拟对象列表生成完成，总匹对SQL数：'+sqlList.length);
     return sqlList;
 };
-// XlsxFile.prototype.matchFiles = function(_xlsxs){
-//     const xlsxs = _xlsxs;
-//     const {fileRules} = this.options;
-//     let index = -1;
-//     for (let i = 0; i < xlsxs.length; i++) {
-//         const xlsx = xlsxs[i];
-//         if(xlsx.match){continue;}
-//         this.matchCount++;
-//         this.$xlsx = xlsx;
-//         if(fileRules.call(this)){
-//             index = i;
-//             xlsxs[index].match = true;
-//             break;
-//         }
-//     }
-//     if(index > -1){
-//         return {index,xlsx:xlsxs[index]};
-//     }
-//     return null;
-// };
+XlsxFile.prototype.matchXlsx = function(_xlsxs){
+    const xlsxs = _xlsxs;
+    const {fileRules} = this.options;
+    let index = -1;
+    for (let i = 0; i < xlsxs.length; i++) {
+        const xlsx = xlsxs[i];
+        if(xlsx.match){continue;}
+        this.matchCount++;
+        this.$xlsx = xlsx;
+        if(fileRules.call(this)){
+            index = i;
+            xlsxs[index].match = true;
+            break;
+        }
+    }
+    if(index > -1){
+        return {index,xlsx:xlsxs[index]};
+    }
+    return null;
+};
 XlsxFile.prototype.getSqls = function(_sqlObjList){
     console.log('开始生成有效SQL语句列表...');
     const sqlObjList = _sqlObjList?_sqlObjList:this.sqlObjList;

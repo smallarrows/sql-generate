@@ -22,15 +22,10 @@ const {FileObj} = require('./obj');
     * } options 
     */
 function File(options){
-    //1. 处理路径
-    const {rootPath,sqlPath} = options;
-    options.rootPath = path.join(rootPath,"");
-    options.sqlPath = path.join(sqlPath,"");
-
-    //2. 继承基类
+    //1. 继承基类
     Base.call(this,options);
-
-    //3. 设置校验类型
+    
+    //2. 设置校验类型
     this.paramsType = {
         rootPath:'string',
         sqlPath:'string',
@@ -39,13 +34,18 @@ function File(options){
         autoReadDirs:'boolean'
     };
     this.checkOptions();
-
-    //4. 初始化实例参数
+    
+    //3. 初始化实例参数
     this.isDirsUpdate = true;
     Object.assign(this.params,{
         file:['$FILE_FILENAME','$FILE_FILEPATH'],
     });
     initParams(this,this.params);
+
+    //4. 格式化路径
+    const {rootPath,sqlPath} = options;
+    options.rootPath = path.join(rootPath,"");
+    options.sqlPath = path.join(sqlPath,"");
 
     //5. 获取目录和文件
     const autoReadDirs = options.autoReadDirs == null?true:options.autoReadDirs;
@@ -55,13 +55,22 @@ function File(options){
 }
 File.prototype = Base.prototype;
 
+const {checkOptions} = File.prototype;
+File.prototype.checkOptions = function(){
+    const ifOptions = checkOptions.call(this);
+    const ifFileRules = typeof this.options.fileRules === 'function';
+    if(!ifFileRules){
+        throw Error(`Please set fileRules in options`);
+    }
+    return ifFileRules && ifOptions;
+}
 /**
  * 覆写设置参数方法
  * @param {*} options 
  */
 File.prototype.setOptions = function(options={}){
     const _options = this.options;
-    if(this.checkOptions(options)){
+    if(this.checkOptions()){
         this.options = options;
         if(_options.rootPath !== options.rootPath){
             this.isDirsUpdate = true;
@@ -86,7 +95,7 @@ File.prototype.getDirs = function(_root) {
     const root = _root?_root:this.options.rootPath;
     let dirs = [];
     let files = [];
-    function collectDir(dirPath,dirsBuf,filesBuf) {
+    function collectDir(dirPath,dirsBuf,filesBuf,lastDir) {
         let errorFlag = 0;
         try {
             const dirs = fs.readdirSync(dirPath);
@@ -98,9 +107,10 @@ File.prototype.getDirs = function(_root) {
                 obj.root = root;
                 obj.path = subPath.replace(root,"");
                 obj.isDir = true;
+                obj.last = lastDir;
                 if(fs.statSync(subPath).isDirectory()){
                     dirsBuf[index] = obj;
-                    collectDir(subPath,dirsBuf[index].sub,filesBuf);
+                    collectDir(subPath,dirsBuf[index].sub,filesBuf,dirsBuf[index]);
                 }else{
                     dirsBuf[index] = obj;
                     filesBuf.push(obj);
@@ -113,32 +123,71 @@ File.prototype.getDirs = function(_root) {
             return;
         }
     }
-    collectDir(root,dirs,files);
+    collectDir(root,dirs,files,null);
     this.dirs = dirs;
     this.files = files;
     this.isDirsUpdate = false;
     console.log('文件收集完成，总文件数：'+files.length);
     return {dirs,files};
 };
-File.prototype.matchFiles = function(_files){
-    const files = _files;
-    const {fileRules} = this.options;
+File.prototype.matchFiles = function(fileObj){
+    const {pathRules} = this.options;
+    let result = null;
+    if(typeof pathRules === 'function'){
+        result = pathMatch(this,fileObj);
+    }else{
+        result = allFileMatch(this,fileObj);
+    }
+    return result;
+};
+function pathMatch(instance,fileObj){
+    const {pathRules} = instance.options;
+    const {dirs} = fileObj;
+    const files_result = [];
+    function collectFileMatchingResults(dir){
+        const {isDir,match,name,path,root,sub} = dir;
+        instance.$dir = dir;
+        if(isDir && pathRules.call(instance)){
+            if(sub.length > 0){
+                sub.forEach(subDir=>{
+                    collectFileMatchingResults(subDir);
+                });
+            }
+        }
+        if(!(isDir&&match)){
+            instance.matchCount++;
+            const matchResult = instance.checkFileByFileRules(dir);
+            if(matchResult){
+                dir.match = true;
+                files_result.push(dir);
+            }
+        }
+    }
+    dirs.forEach(dir=>{
+        collectFileMatchingResults(dir);
+    });
+    return files_result.length > 0?files_result:null;
+}
+function allFileMatch(instance,fileObj){
+    const {files} = fileObj;
     const files_result = [];
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if(file.match){continue;}
-        this.matchCount++;
-        this.$FILE_FILENAME = file.name;
-        this.$FILE_FILEPATH = file.root + file.path;
-        if(fileRules.call(this)){
+        instance.matchCount++;
+        const matchResult = instance.checkFileByFileRules(file);
+        if(matchResult){
             files[i].match = true;
             files_result.push(files[i]);
         }
     }
-    if(files_result.length > 0){
-        return files_result;
-    }
-    return null;
+    return files_result.length > 0?files_result:null;
+}
+File.prototype.checkFileByFileRules = function(file){
+    const {fileRules} = this.options;
+    this.$FILE_FILENAME = file.name;
+    this.$FILE_FILEPATH = file.root + file.path;
+    return fileRules.call(this);
 };
 File.prototype.writeFile = function(_path,_data){
     let data_str,p;

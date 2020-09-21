@@ -65,8 +65,18 @@ const sqlBuild = new XlsxFile({
         };
     },
     params,
+    pathRules:function(){
+        const dir = this.$dir;// 遍历目录时的文件对象 
+        const allpath = dir.root+dir.path;
+        const {DELIVERY_TIME} = this.$xlsx;// 遍历时 xlsx 的单行信息
+        const date = path.join(dateFormat(new Date(DELIVERY_TIME),'yyyy/MM/dd'));
+        if(allpath.indexOf(date) != -1){
+            return true;
+        }
+        return false;
+    },
     fileRules:function(){
-        const {DEST_CUSTOMERNO,DELIVERY_TIME} = this.$xlsx;
+        const {DEST_CUSTOMERNO,DELIVERY_TIME} = this.$xlsx;// 遍历时 xlsx 的单行信息
         const date = path.join(dateFormat(new Date(DELIVERY_TIME),'yyyy/MM/dd'));
         const fileNames = this.$FILE_FILENAME.split('_');
         const filePath = this.$FILE_FILEPATH;

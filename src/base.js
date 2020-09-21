@@ -23,15 +23,15 @@ Base.prototype.getParamsOptions = function(){
     return paramOptions;
 };
 Base.prototype.setOptions = function(options={}){
-    if(this.checkOptions(options)){
+    if(this.checkOptions()){
         this.options = options;
     }
 };
 Base.prototype.getOptions= function(){
     return this.options;
 };
-Base.prototype.checkOptions = function(_options){
-    const opt = _options?_options:this.options;
+Base.prototype.checkOptions = function(){
+    const opt = this.options;
     if(opt===undefined){return true;}
     if(JSON.stringify(opt)==="{}"){
         throw new TypeError(`Please set the correct options!`);
