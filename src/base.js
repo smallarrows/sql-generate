@@ -1,4 +1,4 @@
-const {initParams,addManyObservers,execObservers} = require('./util');
+const {initParams,addManyObservers,triggerObservers} = require('./util');
 /**
  * 基类
  * @param {*} options 
@@ -18,8 +18,8 @@ const Base = function(options){
 Base.prototype.getParamsOptions = function(){
     const params = this.options.params;
     const paramOptions = params.call(this);
-    execObservers(paramOptions);// 执行一次，在添加监听
     addManyObservers(paramOptions,this);
+    triggerObservers(paramOptions);
     return paramOptions;
 };
 Base.prototype.setOptions = function(options={}){

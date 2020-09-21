@@ -5,18 +5,17 @@ const path = require('path');
 const params = function() {
     return {     
     DOC_TYPE:{
-        value: this.$FILE_FILENAME,
+        value: this.$FILE_FILENAME,// 变量赋值会触发 observers
         observers: function(){
-            this.isRunObservers = false;// 修改自身值不触发监听
+            this.isRunObservers = false; // 关闭下一次监听
             this.value = this.value.split('_')[0];
         }
     },
     FILENAME:{
-        value: this.$FILE_FILENAME,
+        value: this.$FILE_FILENAME,// 变量赋值会触发 observers
+        only: true,// 只触发一次
         observers: function(){
-            this.isRunObservers = false;// 修改自身值不触发监听
             this.value = path.basename(this.value,'.png');
-            this.isRunObservers = false;// 修改自身值不触发监听
             this.value = path.basename(this.value,'.jpg');
         }
     },
@@ -41,13 +40,12 @@ const params = function() {
     UPLOAD_METHOD:"AWS S3",
     UPLOAD_PATH:{
         value:`tc-tms/tms-wechat/${this.$FILE_FILEPATH}`,
+        only: true,// 只触发一次
         observers: function(){
             this.value = path.join(this.value);
             if(path.sep === '\\'){
-                this.isRunObservers = false;// 修改自身值不触发监听
                 this.value = this.value.replace(/\\/g,'/');
             }
-            this.isRunObservers = false;    // 修改自身值不触发监听
             this.value = this.value.replace('D:/Myself_test/sql-generate/wechatFile/',"");
         }
     },

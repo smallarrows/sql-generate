@@ -32,12 +32,27 @@ util.initParams = function (instance, params) {
  * 执行param内字段值监听
  * @param {*} param 
  */
-util.execObservers = function (param) {
+util.execObservers = function (param,instance) {
     for (const key in param) {
         if (param.hasOwnProperty(key)) {
             const v = param[key];
             if (typeof v === 'object' && typeof v.observers === 'function') {
-                v.observers();
+                v.observers.call(instance);
+            }
+        }
+    }
+};
+/**
+ * 触发param内字段值监听
+ * @param {*} param 
+ */
+util.triggerObservers = function (param) {
+    for (const key in param) {
+        if (param.hasOwnProperty(key)) {
+            const v = param[key];
+            if (v !== "$" && typeof v === 'object' && typeof v.observers === 'function') {
+                const {value} = v;
+                v.value = value;
             }
         }
     }
@@ -52,12 +67,17 @@ util.addObservers = function (param,instance) {
     if(typeof param.observers !== 'function'){return param;}
     let paramProxy = new Proxy(param, {
         set: function (target, propKey, value, receiver) {
-            const isRunObservers = target.isRunObservers?target.isRunObservers:true;
+            const isRunObservers = target.isRunObservers == null?true:target.isRunObservers;
+            let observersCount = target.observersCount;
             target[propKey] = value;
             if(propKey !== 'value'){return Reflect.set(target, propKey, value, receiver);}
-            if(isRunObservers){
+            if(isRunObservers || observersCount == null){
+                if(target.only && observersCount >= 1){
+                    return Reflect.set(target, propKey, value, receiver);
+                }
+                paramProxy.observersCount = paramProxy.observersCount?paramProxy.observersCount+1:1;
                 if(instance){
-                    target.observers.call(instance);
+                    target.observers.call(Object.assign(paramProxy,{$:instance}));
                 }else{
                     target.observers();
                 }
