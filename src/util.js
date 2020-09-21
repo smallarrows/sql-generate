@@ -75,15 +75,15 @@ util.addObservers = function (param,instance) {
                 if(target.only && observersCount >= 1){
                     return Reflect.set(target, propKey, value, receiver);
                 }
-                paramProxy.observersCount = paramProxy.observersCount?paramProxy.observersCount+1:1;
+                target.observersCount = target.observersCount?target.observersCount+1:1;
                 if(instance){
-                    target.observers.call(Object.assign(paramProxy,{$:instance}));
+                    target.observers.call(Object.assign(receiver,{$:instance}));
                 }else{
-                    target.observers();
+                    receiver.observers();
                 }
             }
             target.isRunObservers = true;
-            return Reflect.set(target, propKey, value, receiver);
+            return Reflect.set(target, propKey, receiver[propKey], receiver);
         }
     });
     return paramProxy;

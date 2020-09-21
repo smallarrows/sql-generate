@@ -37,16 +37,15 @@ const params = function() {
         value: this.$xlsx.DELIVERY_TIME
     },
     UPLOAD_FLAG:"Y",
-    UPLOAD_METHOD:"AWS S3",
+    UPLOAD_METHOD:"DEMO",
     UPLOAD_PATH:{
-        value:`tc-tms/tms-wechat/${this.$FILE_FILEPATH}`,
+        value:`${this.$FILE_FILEPATH}`,
         only: true,// 只触发一次
         observers: function(){
             this.value = path.join(this.value);
             if(path.sep === '\\'){
                 this.value = this.value.replace(/\\/g,'/');
             }
-            this.value = this.value.replace('D:/Myself_test/sql-generate/wechatFile/',"");
         }
     },
     SEQ:"1"
@@ -78,7 +77,13 @@ const sqlBuild = new XlsxFile({
         const date = path.join(dateFormat(new Date(DELIVERY_TIME),'yyyy/MM/dd'));
         const fileNames = this.$FILE_FILENAME.split('_');
         const filePath = this.$FILE_FILEPATH;
-        if(DEST_CUSTOMERNO == fileNames[2] && filePath.indexOf(date) != -1){
+        let dest_customerNo = "";
+        if(fileNames[0]==='sign'){
+            dest_customerNo = fileNames[1];
+        }else if(fileNames[0]==='photo'){
+            dest_customerNo = fileNames[2];
+        }
+        if(DEST_CUSTOMERNO == dest_customerNo && filePath.indexOf(date) != -1){
             return true;
         }
         return false;

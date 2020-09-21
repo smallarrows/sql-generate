@@ -106,12 +106,13 @@ File.prototype.getDirs = function(_root) {
                 obj.name = dir;
                 obj.root = root;
                 obj.path = subPath.replace(root,"");
-                obj.isDir = true;
                 obj.last = lastDir;
                 if(fs.statSync(subPath).isDirectory()){
+                    obj.isDir = true;
                     dirsBuf[index] = obj;
                     collectDir(subPath,dirsBuf[index].sub,filesBuf,dirsBuf[index]);
                 }else{
+                    obj.isDir = false;
                     dirsBuf[index] = obj;
                     filesBuf.push(obj);
                 }
